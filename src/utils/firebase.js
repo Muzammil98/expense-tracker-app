@@ -3,12 +3,12 @@ import "firebase/storage";
 import "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCld6JqRfnACXcDXq8RsdY95AgblZkOhL0",
-  authDomain: "react-firebase-auth-8c9b0.firebaseapp.com",
-  projectId: "react-firebase-auth-8c9b0",
-  storageBucket: "react-firebase-auth-8c9b0.appspot.com",
-  messagingSenderId: "233055648526",
-  appId: "1:233055648526:web:adc123abcbcd0a3cd1f55f",
+  apiKey: "AIzaSyDDQUv-trpHTWJ-JLmn2hhHlgaYceDy90k",
+  authDomain: "expense-tracker-app-a470a.firebaseapp.com",
+  projectId: "expense-tracker-app-a470a",
+  storageBucket: "expense-tracker-app-a470a.appspot.com",
+  messagingSenderId: "831365132001",
+  appId: "1:831365132001:web:4657957273239ead1c11a0",
 };
 
 const app = !firebase.apps.length
@@ -19,7 +19,4 @@ const db = app.firestore();
 const auth = app.auth();
 const storage = app.storage();
 
-
-
-
-export { db, auth, storage,firebase };
+export { db, auth, storage, firebase };
