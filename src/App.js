@@ -7,13 +7,16 @@ import Layout from "./components/Layout";
 
 // * Context
 import { AuthProvider } from "./context/AuthContext";
+import { TxProvider } from "./context/TxContext";
 
 function App() {
   return (
     <AuthProvider>
-      <Layout>
-        <AppFrame />
-      </Layout>
+      <TxProvider>
+        <Layout>
+          <AppFrame />
+        </Layout>
+      </TxProvider>
     </AuthProvider>
   );
 }
