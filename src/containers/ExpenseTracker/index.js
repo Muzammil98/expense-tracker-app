@@ -7,6 +7,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useTx } from "../../context/TxContext";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
+
 // import Chart from 'chart.js';
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -29,6 +30,14 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    "& .chart": {
+      [theme.breakpoints.up("sm")]: {
+        width: "250px !important",
+        height: "250px !important",
+      },
+      width: "200px !important",
+      height: "200px !important",
+    },
   },
   bottomContainer: {
     display: "flex",
@@ -103,51 +112,59 @@ const ExpenseTracker = () => {
     transactions,
   } = useTx();
   const chartConfig = {
-    type: "bar",
+    type: "pie",
     data: {
-      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+      labels: ["Income", "Expense", "Balance"],
       datasets: [
         {
           label: "# of Votes",
-          data: [12, 19, 3, 5, 2, 3],
+          data: [20000, 15000, 5000],
           backgroundColor: [
-            "rgba(255, 99, 132, 0.2)",
             "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 99, 132, 0.2)",
+
             "rgba(255, 206, 86, 0.2)",
-            "rgba(75, 192, 192, 0.2)",
-            "rgba(153, 102, 255, 0.2)",
-            "rgba(255, 159, 64, 0.2)",
+            // "rgba(75, 192, 192, 0.2)",
+            // "rgba(153, 102, 255, 0.2)",
+            // "rgba(255, 159, 64, 0.2)",
           ],
           borderColor: [
-            "rgba(255, 99, 132, 1)",
             "rgba(54, 162, 235, 1)",
+            "rgba(255, 99, 132, 1)",
+
             "rgba(255, 206, 86, 1)",
-            "rgba(75, 192, 192, 1)",
-            "rgba(153, 102, 255, 1)",
-            "rgba(255, 159, 64, 1)",
+            // "rgba(75, 192, 192, 1)",
+            // "rgba(153, 102, 255, 1)",
+            // "rgba(255, 159, 64, 1)",
           ],
           borderWidth: 1,
+          hoverOffset: 15,
         },
       ],
     },
     options: {
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
+      responsive: true,
+      plugins: {
+        // legend: {
+        //   position: 'left',
+        // },
+        legend: false,
+        // tooltip: false,
+      },
+      layout: {
+        padding: 20,
       },
     },
   };
 
   useEffect(() => {
-    if (chartContainer && chartContainer.current) {
-      const newChartInstance = new Chart(chartContainer.current, chartConfig);
-      setChartInstance(newChartInstance);
-    }
+    // if (chartContainer && chartContainer.current) {
+    const newChartInstance = new Chart(chartContainer.current, chartConfig);
+    setChartInstance(newChartInstance);
+    // }
+    return () => {
+      newChartInstance.destroy();
+    };
   }, [chartContainer]);
   useEffect(() => {
     getTransactions(user.uid);
@@ -223,7 +240,7 @@ const ExpenseTracker = () => {
           </div>
         </div>
         <div>
-          <canvas ref={chartContainer} />
+          <canvas className="chart" ref={chartContainer} />
         </div>
       </div>
       <button onClick={onButtonClick}>Randomize!</button>
