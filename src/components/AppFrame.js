@@ -43,9 +43,10 @@ const useStyles = makeStyles((theme) => ({
     height: "80vh",
     [theme.breakpoints.down("xs")]: {
       width: "100vw",
-      height: "100vh",
+      height: "100%",
       background: "transparent",
       boxShadow: "none",
+      marginTop:"50px"
     },
     zIndex: 0,
     opacity: "0.999",

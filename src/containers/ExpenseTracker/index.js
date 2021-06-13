@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { auth } from "../../utils/firebase";
 import { useAuth } from "../../context/AuthContext";
-import { IconButton, Button } from "@material-ui/core";
+import { IconButton, Button, TextField, InputLabel } from "@material-ui/core";
 import { FiPower } from "react-icons/fi";
 import { makeStyles } from "@material-ui/core/styles";
 import { useTx } from "../../context/TxContext";
@@ -35,8 +35,9 @@ const useStyles = makeStyles((theme) => ({
         width: "250px !important",
         height: "250px !important",
       },
-      width: "200px !important",
-      height: "200px !important",
+      // width: "200px !important",
+      // height: "200px !important",
+      display: "none !important",
     },
   },
   bottomContainer: {
@@ -44,10 +45,19 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: "40px",
+    [theme.breakpoints.up("sm")]: {
+      flexDirection: "row",
+    },
+    flexDirection: "column",
   },
   foregroundBox: {
-    width: "300px",
+    [theme.breakpoints.up("sm")]: {
+      width: "300px",
+      height: "150px",
+    },
+    width: "250px",
     height: "150px",
+
     background: "rgba(148, 147, 152, 0.19)",
     backdropFilter: "blur(26px)",
     borderRadius: "20px",
@@ -82,11 +92,13 @@ const useStyles = makeStyles((theme) => ({
   },
 
   backgroundBox: {
-    width: "260px",
-    height: "120px",
     [theme.breakpoints.up("sm")]: {
       background: "#6953f7c7",
+      width: "260px",
+      height: "120px",
     },
+    width: "250px",
+    height: "120px",
     background: "#6953f769",
     backdropFilter: "blur(7px)",
     borderRadius: "20px",
@@ -100,7 +112,8 @@ const ExpenseTracker = () => {
   const classes = useStyles();
   const { user, signOut } = useAuth();
   const chartContainer = useRef(null);
-
+  const [amount, setAmount] = useState("");
+  const [name, setName] = useState("");
   const [chartInstance, setChartInstance] = useState(null);
   const randomInt = () => Math.floor(Math.random() * (10 - 1 + 1)) + 1;
 
@@ -206,6 +219,17 @@ const ExpenseTracker = () => {
     deleteTransaction(id);
   };
 
+  const handleNumberChange = (e) => {
+    const re = /^[-]{0,1}[0-9]*$/;
+
+    console.log("handleNumberChange", re.test(e.target.value), e.target.value);
+    if (re.test(e.target.value)) {
+      setAmount(e.target.value);
+    }
+  };
+  const handleSubmit = () => {
+    console.log("NAME:: ", name, "AMOUNT:: ", amount);
+  };
   return (
     <div className={classes.ExpenseTrackerContainer}>
       <div className={classes.topContainer}>
@@ -243,10 +267,36 @@ const ExpenseTracker = () => {
           <canvas className="chart" ref={chartContainer} />
         </div>
       </div>
-      <button onClick={onButtonClick}>Randomize!</button>
+      {/* <button onClick={onButtonClick}>Randomize!</button> */}
 
       <div className={classes.bottomContainer}>
         <div className={classes.formContainer}>
+          <h3 className={classes.welcomeTxt}>Add Transaction</h3>
+          <div>
+            <InputLabel>Name</InputLabel>
+            <TextField
+              name="name"
+              type="text"
+              className={classes.inputField}
+              placeholder="Income"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Amount</InputLabel>
+            <TextField
+              name="amount"
+              onChange={handleNumberChange}
+              value={amount}
+              className={classes.inputField}
+              placeholder="0"
+              helperText="Some important text"
+              required
+            />
+          </div>
+          <Button onClick={() => handleSubmit()}>Submit</Button>
           <button onClick={handleAddTransaction}>Add</button>
           <button onClick={handleUpdateTransaction}>Update</button>
           <button onClick={handleDeleteTransaction}>Delete</button>
