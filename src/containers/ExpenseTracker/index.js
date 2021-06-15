@@ -6,7 +6,9 @@ import { FiPower } from "react-icons/fi";
 import { makeStyles } from "@material-ui/core/styles";
 import { useTx } from "../../context/TxContext";
 import { Chart, registerables } from "chart.js";
-// BsTrash MdClose GrEdit from "react-icons"
+import { BsTrash } from "react-icons/bs";
+import { MdClose } from "react-icons/md";
+import { GrEdit } from "react-icons/gr";
 Chart.register(...registerables);
 
 // import Chart from 'chart.js';
@@ -308,7 +310,8 @@ const ExpenseTracker = () => {
               <div className={classes.balancContainer}>
                 <h4 className="balance-heading">Your balance</h4>
                 <h2 className="balance-info">
-                  <span>$</span>{balance}
+                  <span>$</span>
+                  {balance}
                 </h2>
               </div>
               <div className="expenseItemsContainer">
@@ -397,17 +400,17 @@ const ExpenseTracker = () => {
                     {value.name} , {value.amount}{" "}
                   </li>
                   {buttonEdit && transactionId === id ? (
-                    <span
+                    <IconButton
                       onClick={() => {
                         setButtonEdit(false);
                         setName("");
                         setAmount("");
                       }}
                     >
-                      Cancel
-                    </span>
+                      <MdClose />
+                    </IconButton>
                   ) : (
-                    <span
+                    <IconButton
                       onClick={() => {
                         handleEdit({
                           name,
@@ -416,12 +419,12 @@ const ExpenseTracker = () => {
                         });
                       }}
                     >
-                      Edit
-                    </span>
+                      <GrEdit />
+                    </IconButton>
                   )}
-                  <span onClick={() => handleDeleteTransaction(id)}>
-                    Delete
-                  </span>
+                  <IconButton onClick={() => handleDeleteTransaction(id)}>
+                    <BsTrash />
+                  </IconButton>
                 </>
               );
             })}
