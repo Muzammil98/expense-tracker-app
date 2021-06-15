@@ -6,7 +6,7 @@ import { FiPower } from "react-icons/fi";
 import { makeStyles } from "@material-ui/core/styles";
 import { useTx } from "../../context/TxContext";
 import { Chart, registerables } from "chart.js";
-import { BsTrash } from "react-icons/bs";
+import { BsTrash, BsPencil } from "react-icons/bs";
 import { MdClose } from "react-icons/md";
 import { GrEdit } from "react-icons/gr";
 Chart.register(...registerables);
@@ -22,18 +22,25 @@ const useStyles = makeStyles((theme) => ({
     left: "10px",
   },
   ExpenseTrackerContainer: {
-    alignSelf: "flex-start",
     padding: "30px 40px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    [theme.breakpoints.up("sm")]: {
+      flexDirection: "row",
+    },
+    flexDirection: "column",
   },
   welcomeTxt: { marginBottom: "30px", fontWeight: "300" },
-  headings: { marginBottom: "10px", fontWeight: "300" },
+  headings: { marginBottom: "10px", fontWeight: "300", marginTop: "30px" },
   summaryContainer: {
     position: "relative",
   },
   topContainer: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+    flexDirection: "column",
     "& .chart": {
       [theme.breakpoints.up("sm")]: {
         width: "250px !important",
@@ -91,6 +98,11 @@ const useStyles = makeStyles((theme) => ({
           fontWeight: "200",
           marginBottom: "0px",
         },
+        "& .expense-info": {
+          [theme.breakpoints.down("sm")]: {
+            fontSize: "12px",
+          },
+        },
       },
     },
   },
@@ -111,8 +123,13 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "-20px",
   },
+  formContainer: {
+    width: "100%",
+   
+  },
   inputField: {
-    "& input": { fontSize: "12px", color: "white" },
+    width: "100%",
+    "& input": { fontSize: "12px", color: "white", width: "100%" },
 
     "& ::placeholder": {
       color: "white",
@@ -132,6 +149,46 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "200",
     fontSize: "12px",
     marginBottom: "3px",
+  },
+
+  txContainer: {
+    "& .tx-items": {
+      display: "flex",
+      listStyleType: "none",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "10px 0",
+
+      "& .name-wrapper": {
+        fontWeight: "250",
+      },
+      "& .action-wrapper": {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        "& p": {
+          marginRight: "10px",
+        },
+
+        "& button": { padding: "0", paddingLeft: "10px" },
+        "& .amount-green": {
+          color: "#85F190",
+        },
+        "& .amount-red": {
+          color: "#FF6C6C",
+        },
+      },
+    },
+  },
+  historyContainer: {
+    [theme.breakpoints.up("sm")]: {
+      paddingLeft: "30px",
+      width: "70%",
+      maxHeight: "calc(80vh - 60px)",
+      overflowY: "scroll",
+      overflowX: "hidden",
+    },
+    width: "100%",
   },
 }));
 const ExpenseTracker = () => {
@@ -235,7 +292,6 @@ const ExpenseTracker = () => {
     setIncome(income.toString());
     setExpense(Math.abs(expense).toString());
     setBalance(balance.toString());
-    console.log("INCOME::", income, "EXPENSE::", expense, "BALACNE::", balance);
   }, [transactions]);
 
   const updateDataset = (datasetIndex, newData) => {
@@ -300,7 +356,7 @@ const ExpenseTracker = () => {
   return (
     <div className={classes.ExpenseTrackerContainer}>
       <div className={classes.topContainer}>
-        <div>
+        <div className={classes.graphicContainer}>
           <h3 className={classes.welcomeTxt}>
             Hello, {user ? user.displayName : "user"}
           </h3>
@@ -331,13 +387,6 @@ const ExpenseTracker = () => {
             </div>
           </div>
         </div>
-        <div>
-          <canvas className="chart" ref={chartContainer} />
-        </div>
-      </div>
-      {/* <button onClick={onButtonClick}>Randomize!</button> */}
-
-      <div className={classes.bottomContainer}>
         <div className={classes.formContainer}>
           <h3 className={classes.headings}>Add Transaction</h3>
           <div className={classes.inputGroup}>
@@ -360,7 +409,7 @@ const ExpenseTracker = () => {
               value={amount}
               className={classes.inputField}
               placeholder="0"
-              helperText="Some important text"
+              helperText="(-10 = Expense , +10 = Income)"
               required
             />
           </div>
@@ -385,51 +434,60 @@ const ExpenseTracker = () => {
           <button onClick={handleUpdateTransaction}>Update</button>
           <button onClick={handleDeleteTransaction}>Delete</button> */}
         </div>
-        <div className={classes.historyContainer}>
-          <h3 className={classes.headings}>History</h3>
+      </div>
 
-          <ul>
-            {transactions.map((tx) => {
-              const id = Object.keys(tx)[0];
-              const value = Object.values(tx)[0];
-              const { name, amount } = value;
+      <div className={classes.historyContainer}>
+        <h3 className={classes.headings}>History</h3>
 
-              return (
-                <>
-                  <li key={id}>
-                    {value.name} , {value.amount}{" "}
-                  </li>
-                  {buttonEdit && transactionId === id ? (
-                    <IconButton
-                      onClick={() => {
-                        setButtonEdit(false);
-                        setName("");
-                        setAmount("");
-                      }}
-                    >
-                      <MdClose />
+        <ul className={classes.txContainer}>
+          {transactions.map((tx) => {
+            const id = Object.keys(tx)[0];
+            const value = Object.values(tx)[0];
+            const { name, amount } = value;
+
+            return (
+              <>
+                <li className="tx-items" key={id}>
+                  <div className="name-wrapper">
+                    <p>{value.name}</p>
+                  </div>
+                  <div className="action-wrapper">
+                    <p className={amount > 0 ? "amount-green" : "amount-red"}>
+                      <span>{amount > 0 ? "+" : "-"}</span>$
+                      {Math.abs(value.amount)}
+                    </p>
+                    {buttonEdit && transactionId === id ? (
+                      <IconButton
+                        onClick={() => {
+                          setButtonEdit(false);
+                          setName("");
+                          setAmount("");
+                        }}
+                      >
+                        <MdClose size={15} color="white" />
+                      </IconButton>
+                    ) : (
+                      <IconButton
+                        onClick={() => {
+                          handleEdit({
+                            name,
+                            amount,
+                            docId: id,
+                          });
+                        }}
+                      >
+                        <BsPencil size={15} color="gray" />
+                      </IconButton>
+                    )}
+                    <IconButton onClick={() => handleDeleteTransaction(id)}>
+                      <BsTrash size={15} color="#fe6767" />
                     </IconButton>
-                  ) : (
-                    <IconButton
-                      onClick={() => {
-                        handleEdit({
-                          name,
-                          amount,
-                          docId: id,
-                        });
-                      }}
-                    >
-                      <GrEdit />
-                    </IconButton>
-                  )}
-                  <IconButton onClick={() => handleDeleteTransaction(id)}>
-                    <BsTrash />
-                  </IconButton>
-                </>
-              );
-            })}
-          </ul>
-        </div>
+                  </div>
+                </li>
+              </>
+            );
+          })}
+        </ul>
       </div>
       <IconButton className={classes.logoutBtn} onClick={() => handleSignOut()}>
         <FiPower />
