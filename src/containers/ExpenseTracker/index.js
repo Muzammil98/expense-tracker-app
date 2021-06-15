@@ -6,6 +6,7 @@ import { FiPower } from "react-icons/fi";
 import { makeStyles } from "@material-ui/core/styles";
 import { useTx } from "../../context/TxContext";
 import { Chart, registerables } from "chart.js";
+// BsTrash MdClose GrEdit from "react-icons"
 Chart.register(...registerables);
 
 // import Chart from 'chart.js';
@@ -23,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
     padding: "30px 40px",
   },
   welcomeTxt: { marginBottom: "30px", fontWeight: "300" },
+  headings: { marginBottom: "10px", fontWeight: "300" },
   summaryContainer: {
     position: "relative",
   },
@@ -107,14 +109,43 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "-20px",
   },
+  inputField: {
+    "& input": { fontSize: "12px", color: "white" },
+
+    "& ::placeholder": {
+      color: "white",
+      fontSize: "12px",
+    },
+    "& .MuiInput-underline:before": {
+      borderColor: "gray",
+    },
+    "& .MuiFormHelperText-root": {
+      color: "darkgray",
+      fontSize: "10px",
+    },
+  },
+  inputGroup: { marginBottom: "20px" },
+  inputLabel: {
+    color: "white",
+    fontWeight: "200",
+    fontSize: "12px",
+    marginBottom: "3px",
+  },
 }));
 const ExpenseTracker = () => {
-  const classes = useStyles();
-  const { user, signOut } = useAuth();
-  const chartContainer = useRef(null);
   const [amount, setAmount] = useState("");
   const [name, setName] = useState("");
   const [chartInstance, setChartInstance] = useState(null);
+  const [buttonEdit, setButtonEdit] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
+  const [income, setIncome] = useState("");
+  const [expense, setExpense] = useState("");
+  const [balance, setBalance] = useState("");
+
+  const classes = useStyles();
+  const { user, signOut } = useAuth();
+  const chartContainer = useRef(null);
+
   const randomInt = () => Math.floor(Math.random() * (10 - 1 + 1)) + 1;
 
   const {
@@ -182,9 +213,29 @@ const ExpenseTracker = () => {
   useEffect(() => {
     getTransactions(user.uid);
   }, []);
+
   useEffect(() => {
-    console.log("YOUR TRANSACTIONS", "=>", transactions);
+    let income = 0,
+      expense = 0,
+      balance = 0;
+    transactions.map((tx) => {
+      const id = Object.keys(tx)[0];
+      const value = Object.values(tx)[0];
+      const { name, amount } = value;
+      if (amount > 0) {
+        income += amount;
+      }
+      if (amount < 0) {
+        expense += amount;
+      }
+    });
+    balance = income - Math.abs(expense);
+    setIncome(income.toString());
+    setExpense(Math.abs(expense).toString());
+    setBalance(balance.toString());
+    console.log("INCOME::", income, "EXPENSE::", expense, "BALACNE::", balance);
   }, [transactions]);
+
   const updateDataset = (datasetIndex, newData) => {
     chartInstance.data.datasets[datasetIndex].data = newData;
     chartInstance.update();
@@ -208,12 +259,15 @@ const ExpenseTracker = () => {
     addTransaction({ name: "Tx", amount: 10, userId: user.uid });
   };
 
-  const handleUpdateTransaction = ({ name, amount, docId }) => {
+  const handleUpdateTransaction = () => {
     updateTransaction({
       name,
       amount,
-      docId,
+      docId: transactionId,
     });
+    setName("");
+    setAmount("");
+    setButtonEdit(false);
   };
   const handleDeleteTransaction = (id) => {
     deleteTransaction(id);
@@ -228,7 +282,18 @@ const ExpenseTracker = () => {
     }
   };
   const handleSubmit = () => {
-    console.log("NAME:: ", name, "AMOUNT:: ", amount);
+    if (!name || name === null || !amount || amount === null) {
+      return;
+    }
+    addTransaction({ name, amount: parseInt(amount), userId: user.uid });
+    setName("");
+    setAmount("");
+  };
+  const handleEdit = ({ name, amount, docId }) => {
+    setName(name.toString());
+    setAmount(amount.toString());
+    setTransactionId(docId);
+    setButtonEdit(true);
   };
   return (
     <div className={classes.ExpenseTrackerContainer}>
@@ -243,20 +308,20 @@ const ExpenseTracker = () => {
               <div className={classes.balancContainer}>
                 <h4 className="balance-heading">Your balance</h4>
                 <h2 className="balance-info">
-                  <span>$</span>26100
+                  <span>$</span>{balance}
                 </h2>
               </div>
               <div className="expenseItemsContainer">
                 <div className="expenseItem">
                   <h5 className="expense-heading">Income</h5>
                   <p className="expense-info">
-                    <span>+</span> <span>$</span> 26100.12
+                    <span>+</span> <span>$</span> {income}
                   </p>
                 </div>
                 <div className="expenseItem">
                   <h5 className="expense-heading">Expense</h5>
                   <p className="expense-info">
-                    <span>-</span> <span>$</span> 2000
+                    <span>-</span> <span>$</span> {expense}
                   </p>
                 </div>
               </div>
@@ -271,9 +336,9 @@ const ExpenseTracker = () => {
 
       <div className={classes.bottomContainer}>
         <div className={classes.formContainer}>
-          <h3 className={classes.welcomeTxt}>Add Transaction</h3>
-          <div>
-            <InputLabel>Name</InputLabel>
+          <h3 className={classes.headings}>Add Transaction</h3>
+          <div className={classes.inputGroup}>
+            <InputLabel className={classes.inputLabel}>Name</InputLabel>
             <TextField
               name="name"
               type="text"
@@ -284,8 +349,8 @@ const ExpenseTracker = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div>
-            <InputLabel>Amount</InputLabel>
+          <div className={classes.inputGroup}>
+            <InputLabel className={classes.inputLabel}>Amount</InputLabel>
             <TextField
               name="amount"
               onChange={handleNumberChange}
@@ -296,12 +361,30 @@ const ExpenseTracker = () => {
               required
             />
           </div>
-          <Button onClick={() => handleSubmit()}>Submit</Button>
-          <button onClick={handleAddTransaction}>Add</button>
+          {buttonEdit ? (
+            <Button
+              variant="contained"
+              style={{ background: "#dede4e" }}
+              onClick={() => handleUpdateTransaction()}
+            >
+              Update
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleSubmit()}
+            >
+              Submit
+            </Button>
+          )}
+          {/* <button onClick={handleAddTransaction}>Add</button>
           <button onClick={handleUpdateTransaction}>Update</button>
-          <button onClick={handleDeleteTransaction}>Delete</button>
+          <button onClick={handleDeleteTransaction}>Delete</button> */}
         </div>
         <div className={classes.historyContainer}>
+          <h3 className={classes.headings}>History</h3>
+
           <ul>
             {transactions.map((tx) => {
               const id = Object.keys(tx)[0];
@@ -313,17 +396,29 @@ const ExpenseTracker = () => {
                   <li key={id}>
                     {value.name} , {value.amount}{" "}
                   </li>
-                  <span
-                    onClick={() =>
-                      handleUpdateTransaction({
-                        name,
-                        amount: amount + Math.random() * 100,
-                        docId: id,
-                      })
-                    }
-                  >
-                    Edit
-                  </span>
+                  {buttonEdit && transactionId === id ? (
+                    <span
+                      onClick={() => {
+                        setButtonEdit(false);
+                        setName("");
+                        setAmount("");
+                      }}
+                    >
+                      Cancel
+                    </span>
+                  ) : (
+                    <span
+                      onClick={() => {
+                        handleEdit({
+                          name,
+                          amount,
+                          docId: id,
+                        });
+                      }}
+                    >
+                      Edit
+                    </span>
+                  )}
                   <span onClick={() => handleDeleteTransaction(id)}>
                     Delete
                   </span>
